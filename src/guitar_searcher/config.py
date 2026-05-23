@@ -35,6 +35,23 @@ class Settings(BaseSettings):
     smtp_password: str = Field(default="", alias="GS_SMTP_PASSWORD")
     smtp_use_tls: bool = Field(default=True, alias="GS_SMTP_USE_TLS")
 
+    # Phase 3 outreach
+    outreach_from: str = Field(default="", alias="GS_OUTREACH_FROM")
+    outreach_reply_to: str = Field(default="", alias="GS_OUTREACH_REPLY_TO")
+    outreach_physical_address: str = Field(default="", alias="GS_OUTREACH_PHYSICAL_ADDRESS")
+    outreach_cooldown_days: int = Field(default=30, alias="GS_OUTREACH_COOLDOWN_DAYS")
+    outreach_sender_name: str = Field(
+        default="Guitar Searcher",
+        alias="GS_OUTREACH_SENDER_NAME",
+    )
+
+    # Phase 3 IMAP (for reply polling)
+    imap_host: str = Field(default="", alias="GS_IMAP_HOST")
+    imap_port: int = Field(default=993, alias="GS_IMAP_PORT")
+    imap_username: str = Field(default="", alias="GS_IMAP_USERNAME")
+    imap_password: str = Field(default="", alias="GS_IMAP_PASSWORD")
+    imap_mailbox: str = Field(default="INBOX", alias="GS_IMAP_MAILBOX")
+
     project_root: Path = Field(default_factory=lambda: Path(__file__).resolve().parents[2])
 
     @property
