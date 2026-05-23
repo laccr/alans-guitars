@@ -70,6 +70,12 @@ src/guitar_searcher/
   utils/                 # rate limiting, logging
 ```
 
+## Docs
+
+- [docs/STATUS.md](docs/STATUS.md) — current state, what works, what's blocked.
+- [docs/RUNBOOK.md](docs/RUNBOOK.md) — exact commands for every common workflow.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — system overview, module map, data contracts.
+
 ## Status
 
-This is Phase 1 (MVP). See `C:\Users\tcsco\.claude\plans\i-want-to-make-sleepy-nova.md` for the full phased roadmap through outreach (Phase 3) and opt-in voice (Phase 4).
+Phases 1, 2, 2b, 2c, 3 are merged. End-to-end validated against live Reverb API + Gmail SMTP/IMAP. Phase 4 (opt-in AI voice calls) is not started. See `docs/STATUS.md` for current detail.
