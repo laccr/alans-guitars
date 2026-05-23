@@ -44,7 +44,11 @@ def discover(
             f"{len(candidates)} US-based candidates"
         )
     elif source == "osm":
-        osm_result = asyncio.run(discover_osm_shops())
+        try:
+            osm_result = asyncio.run(discover_osm_shops())
+        except RuntimeError as exc:
+            console.print(f"[red]OSM discovery failed:[/red] {exc}")
+            raise typer.Exit(code=1) from exc
         candidates = osm_result.candidates
         console.print(
             f"[bold]OSM Overpass:[/bold] {osm_result.raw_elements} elements, "

@@ -22,7 +22,13 @@ from guitar_searcher.utils.logging import get_logger
 
 log = get_logger(__name__)
 
-_OVERPASS_URL = "https://overpass-api.de/api/interpreter"
+_OVERPASS_URLS: tuple[str, ...] = (
+    "https://overpass-api.de/api/interpreter",
+    "https://lz4.overpass-api.de/api/interpreter",
+    "https://z.overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
+)
 
 _QUERY = """
 [out:json][timeout:120];
@@ -45,19 +51,33 @@ class OsmDiscoveryResult:
 async def discover_osm_shops(*, timeout_s: float = 180.0) -> OsmDiscoveryResult:
     """One Overpass query for all US musical-instruments shops."""
     settings = get_settings()
-    headers = {"User-Agent": settings.user_agent, "Accept": "application/json"}
+    # Overpass selects output format via the `[out:json]` directive in the query body
+    # itself, not via the HTTP Accept header. Sending Accept: application/json triggers 406.
+    headers = {"User-Agent": settings.user_agent, "Accept": "*/*"}
     result = OsmDiscoveryResult()
 
-    log.info("osm.querying", url=_OVERPASS_URL)
+    last_error: Exception | None = None
+    payload: dict[str, Any] | None = None
     async with httpx.AsyncClient(timeout=httpx.Timeout(timeout_s), headers=headers) as client:
-        try:
-            resp = await client.post(_OVERPASS_URL, data={"data": _QUERY})
-            resp.raise_for_status()
-        except httpx.HTTPError as exc:
-            log.error("osm.failed", error=str(exc))
-            raise
+        for url in _OVERPASS_URLS:
+            log.info("osm.querying", url=url)
+            try:
+                resp = await client.post(url, data={"data": _QUERY})
+                resp.raise_for_status()
+                payload = resp.json()
+                break
+            except (httpx.HTTPError, ValueError) as exc:
+                log.warning("osm.endpoint_failed", url=url, error=str(exc))
+                last_error = exc
+                continue
 
-    payload: dict[str, Any] = resp.json()
+    if payload is None:
+        raise RuntimeError(
+            "All Overpass endpoints failed. The public Overpass infrastructure may be "
+            "down or blocking this IP. Try again later or run from a different network. "
+            f"Last error: {last_error}"
+        )
+
     elements = payload.get("elements", [])
     result.raw_elements = len(elements)
     log.info("osm.received", elements=result.raw_elements)
