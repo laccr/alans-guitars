@@ -1,0 +1,316 @@
+# Hand-curated seed list of US guitar retailers and well-known vintage / boutique specialists.
+# Bootstraps the shop directory before any discovery (Reverb dir / NAMM / OSM / Google Places) runs.
+#
+# inventory_strategy values:
+#   reverb_api          — primary listings live on Reverb (Tier A handles them)
+#   dedicated_scraper   — has a custom scraper module under guitar_searcher.scrapers
+#   shopify_json        — exposes /products.json (Tier B generic Shopify pull works)
+#   generic_crawler     — needs Tier C Playwright + LLM extraction (Phase 2b)
+#   email_only          — no parseable inventory; outreach only (Phase 3)
+#   manual              — visit by hand
+#   none                — placeholder
+#
+# Always store IANA timezone explicitly. Never infer from state.
+
+shops:
+  # ─── Major national retailers ──────────────────────────────────────────────
+  - name: "Sweetwater"
+    domain: sweetwater.com
+    website_url: https://www.sweetwater.com
+    classification: major_retailer
+    inventory_strategy: dedicated_scraper
+    scraper_module: sweetwater
+    city: Fort Wayne
+    state: IN
+    timezone: America/Indiana/Indianapolis
+    notes: Akamai/Cloudflare bot detection — uses Playwright + stealth.
+
+  - name: "Guitar Center"
+    domain: guitarcenter.com
+    website_url: https://www.guitarcenter.com
+    classification: major_retailer
+    inventory_strategy: dedicated_scraper
+    scraper_module: guitar_center
+    city: Westlake Village
+    state: CA
+    timezone: America/Los_Angeles
+    notes: Phase 2 — scraper not in MVP.
+    active: false
+
+  - name: "Sam Ash Music"
+    domain: samash.com
+    website_url: https://www.samash.com
+    classification: major_retailer
+    inventory_strategy: dedicated_scraper
+    scraper_module: sam_ash
+    city: Hicksville
+    state: NY
+    timezone: America/New_York
+    notes: Phase 2 — scraper not in MVP.
+    active: false
+
+  - name: "Reverb"
+    domain: reverb.com
+    website_url: https://reverb.com
+    classification: major_retailer
+    inventory_strategy: reverb_api
+    scraper_module: reverb_api
+    city: Chicago
+    state: IL
+    timezone: America/Chicago
+    notes: Marketplace — covered exhaustively by Tier A Reverb API scraper.
+
+  # ─── Boutique / vintage specialists ────────────────────────────────────────
+  - name: "Wildwood Guitars"
+    domain: wildwoodguitars.com
+    website_url: https://www.wildwoodguitars.com
+    classification: boutique
+    inventory_strategy: dedicated_scraper
+    scraper_module: wildwood
+    city: Louisville
+    state: CO
+    timezone: America/Denver
+
+  - name: "Chicago Music Exchange"
+    domain: chicagomusicexchange.com
+    website_url: https://www.chicagomusicexchange.com
+    classification: vintage_specialist
+    inventory_strategy: shopify_json
+    city: Chicago
+    state: IL
+    timezone: America/Chicago
+    notes: Shopify-hosted — generic Shopify scraper works.
+
+  - name: "Carter Vintage Guitars"
+    domain: cartervintage.com
+    website_url: https://cartervintage.com
+    classification: vintage_specialist
+    inventory_strategy: dedicated_scraper
+    scraper_module: carter_vintage
+    city: Nashville
+    state: TN
+    timezone: America/Chicago
+
+  - name: "Elderly Instruments"
+    domain: elderly.com
+    website_url: https://www.elderly.com
+    classification: vintage_specialist
+    inventory_strategy: dedicated_scraper
+    scraper_module: elderly
+    city: Lansing
+    state: MI
+    timezone: America/Detroit
+
+  - name: "Gruhn Guitars"
+    domain: gruhn.com
+    website_url: https://guitars.com
+    classification: vintage_specialist
+    inventory_strategy: generic_crawler
+    city: Nashville
+    state: TN
+    timezone: America/Chicago
+    notes: Phase 2b — needs generic crawler.
+    active: false
+
+  - name: "Norman's Rare Guitars"
+    domain: normansrareguitars.com
+    website_url: https://www.normansrareguitars.com
+    classification: vintage_specialist
+    inventory_strategy: email_only
+    city: Tarzana
+    state: CA
+    timezone: America/Los_Angeles
+    notes: Phase 3 — inventory not parseable.
+    active: false
+
+  - name: "Rumble Seat Music"
+    domain: rumbleseatmusic.com
+    website_url: https://www.rumbleseatmusic.com
+    classification: vintage_specialist
+    inventory_strategy: reverb_api
+    reverb_shop_slug: rumble-seat-music
+    city: Ithaca
+    state: NY
+    timezone: America/New_York
+    notes: Primary listings on Reverb storefront.
+
+  - name: "Mass Street Music"
+    domain: massstreetmusic.com
+    website_url: https://www.massstreetmusic.com
+    classification: boutique
+    inventory_strategy: shopify_json
+    city: Lawrence
+    state: KS
+    timezone: America/Chicago
+
+  - name: "True Vintage Guitar"
+    domain: truevintageguitar.com
+    website_url: https://truevintageguitar.com
+    classification: vintage_specialist
+    inventory_strategy: reverb_api
+    reverb_shop_slug: true-vintage-guitar
+    city: Phoenix
+    state: AZ
+    timezone: America/Phoenix
+    notes: Phoenix is on MST year-round — Arizona doesn't observe DST.
+
+  - name: "Imperial Vintage Guitars"
+    domain: imperialvintageguitars.com
+    website_url: https://imperialvintageguitars.com
+    classification: vintage_specialist
+    inventory_strategy: shopify_json
+    city: Los Angeles
+    state: CA
+    timezone: America/Los_Angeles
+
+  - name: "Emerald City Guitars"
+    domain: emeraldcityguitars.com
+    website_url: https://emeraldcityguitars.com
+    classification: vintage_specialist
+    inventory_strategy: shopify_json
+    city: Seattle
+    state: WA
+    timezone: America/Los_Angeles
+
+  - name: "Retrofret Vintage Guitars"
+    domain: retrofret.com
+    website_url: https://www.retrofret.com
+    classification: vintage_specialist
+    inventory_strategy: email_only
+    city: Brooklyn
+    state: NY
+    timezone: America/New_York
+    notes: Phase 3.
+    active: false
+
+  - name: "Lark Street Music"
+    domain: larkstreetmusic.com
+    website_url: https://www.larkstreetmusic.com
+    classification: vintage_specialist
+    inventory_strategy: reverb_api
+    reverb_shop_slug: lark-street-music
+    city: Teaneck
+    state: NJ
+    timezone: America/New_York
+
+  - name: "Solo Vintage Guitars"
+    domain: solovintage.com
+    website_url: https://solovintage.com
+    classification: vintage_specialist
+    inventory_strategy: shopify_json
+    city: Austin
+    state: TX
+    timezone: America/Chicago
+
+  - name: "Killer Vintage Guitars"
+    domain: killervintage.com
+    website_url: https://www.killervintage.com
+    classification: vintage_specialist
+    inventory_strategy: email_only
+    city: St. Louis
+    state: MO
+    timezone: America/Chicago
+    active: false
+
+  - name: "Dave's Guitar Shop"
+    domain: davesguitar.com
+    website_url: https://www.davesguitar.com
+    classification: boutique
+    inventory_strategy: shopify_json
+    city: La Crosse
+    state: WI
+    timezone: America/Chicago
+
+  - name: "Make'n Music"
+    domain: makenmusic.com
+    website_url: https://makenmusic.com
+    classification: boutique
+    inventory_strategy: shopify_json
+    city: Chicago
+    state: IL
+    timezone: America/Chicago
+
+  - name: "Vintage Guitar Boutique"
+    domain: vintageguitarboutique.com
+    website_url: https://vintageguitarboutique.com
+    classification: vintage_specialist
+    inventory_strategy: shopify_json
+    city: Brooklyn
+    state: NY
+    timezone: America/New_York
+
+  - name: "Southside Guitars"
+    domain: southsideguitars.com
+    website_url: https://southsideguitars.com
+    classification: boutique
+    inventory_strategy: shopify_json
+    city: Brooklyn
+    state: NY
+    timezone: America/New_York
+
+  - name: "Replay Guitar Exchange"
+    domain: replayguitar.com
+    website_url: https://replayguitar.com
+    classification: boutique
+    inventory_strategy: reverb_api
+    reverb_shop_slug: replay-guitar-exchange
+    city: Tampa
+    state: FL
+    timezone: America/New_York
+
+  - name: "Russo Music"
+    domain: russomusic.com
+    website_url: https://russomusic.com
+    classification: boutique
+    inventory_strategy: shopify_json
+    city: Asbury Park
+    state: NJ
+    timezone: America/New_York
+
+  - name: "Cream City Music"
+    domain: creamcitymusic.com
+    website_url: https://www.creamcitymusic.com
+    classification: boutique
+    inventory_strategy: shopify_json
+    city: Brookfield
+    state: WI
+    timezone: America/Chicago
+
+  - name: "The Music Zoo"
+    domain: themusiczoo.com
+    website_url: https://www.themusiczoo.com
+    classification: boutique
+    inventory_strategy: shopify_json
+    city: Farmingdale
+    state: NY
+    timezone: America/New_York
+
+  - name: "Humbucker Music"
+    domain: humbuckermusic.com
+    website_url: https://humbuckermusic.com
+    classification: boutique
+    inventory_strategy: shopify_json
+    city: Apex
+    state: NC
+    timezone: America/New_York
+
+  - name: "Songbirds Music House"
+    domain: songbirdsmusichouse.com
+    website_url: https://songbirdsmusichouse.com
+    classification: vintage_specialist
+    inventory_strategy: email_only
+    city: Chattanooga
+    state: TN
+    timezone: America/New_York
+    active: false
+
+  - name: "Bizarre Guitar"
+    domain: bizarreguitar.net
+    website_url: https://www.bizarreguitar.net
+    classification: vintage_specialist
+    inventory_strategy: generic_crawler
+    city: Reno
+    state: NV
+    timezone: America/Los_Angeles
+    notes: Phase 2b.
+    active: false
