@@ -44,6 +44,11 @@ class Settings(BaseSettings):
         default="Guitar Searcher",
         alias="GS_OUTREACH_SENDER_NAME",
     )
+    outreach_signer_name: str = Field(
+        default="",
+        alias="GS_OUTREACH_SIGNER_NAME",
+        description="Name used in the email body signature, e.g. 'I'm Troy and I'm looking for...'.",
+    )
 
     # Phase 3 IMAP (for reply polling)
     imap_host: str = Field(default="", alias="GS_IMAP_HOST")

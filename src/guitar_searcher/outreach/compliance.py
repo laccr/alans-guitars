@@ -15,6 +15,7 @@ This module enforces (4)-(5) at compose time; (6) is enforced by the queue + cla
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from html import escape
 
@@ -93,9 +94,44 @@ _UNSUBSCRIBE_TOKENS: tuple[str, ...] = (
 )
 
 
+
+# Mail-client markers that introduce quoted prior conversation. Anything from the
+# first occurrence onward is the original outbound message, not the reply.
+_QUOTE_MARKERS = (
+    re.compile(r"^On .+? wrote:\s*$", re.IGNORECASE | re.MULTILINE),
+    re.compile(r"^-+\s*Original Message\s*-+\s*$", re.IGNORECASE | re.MULTILINE),
+    re.compile(r"^From:\s+.+\nSent:\s+", re.IGNORECASE | re.MULTILINE),
+    re.compile(r"^From:\s+.+\nDate:\s+", re.IGNORECASE | re.MULTILINE),
+)
+
+
+def strip_quoted_reply(body: str) -> str:
+    """Return only the new content of a reply, dropping the quoted original message.
+
+    Removes:
+      - everything from the first 'On <date> ... wrote:' / '-----Original Message-----'
+        / Outlook-style 'From: ... Sent: ...' marker onward
+      - lines starting with '>' (RFC 3676 quoted-line prefix)
+    """
+    if not body:
+        return ""
+    earliest = len(body)
+    for marker in _QUOTE_MARKERS:
+        m = marker.search(body)
+        if m and m.start() < earliest:
+            earliest = m.start()
+    trimmed = body[:earliest]
+    lines = [line for line in trimmed.splitlines() if not line.lstrip().startswith(">")]
+    return "\n".join(lines).strip()
+
+
 def looks_like_unsubscribe(reply_body: str) -> bool:
-    """Cheap heuristic for opt-out intent in a reply body."""
+    """Cheap heuristic for opt-out intent. Strips quoted content first so the original
+    email's UNSUBSCRIBE footer doesn't false-positive on every reply."""
     if not reply_body:
         return False
-    lower = reply_body.lower()
+    new_content = strip_quoted_reply(reply_body)
+    if not new_content:
+        return False
+    lower = new_content.lower()
     return any(token in lower for token in _UNSUBSCRIBE_TOKENS)

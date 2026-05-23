@@ -26,6 +26,7 @@ def _shop(**overrides: object) -> Shop:
 def _setup_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GS_OUTREACH_PHYSICAL_ADDRESS", "1 Main St, Indianapolis, IN 46201")
     monkeypatch.setenv("GS_OUTREACH_FROM", "user@example.com")
+    monkeypatch.setenv("GS_OUTREACH_SIGNER_NAME", "Brent Scott")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "")  # disable LLM path
     from guitar_searcher.config import get_settings
     from guitar_searcher.llm.client import get_anthropic_client
@@ -71,12 +72,27 @@ def test_compose_refuses_without_email(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_compose_refuses_without_physical_address(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GS_OUTREACH_PHYSICAL_ADDRESS", "")
     monkeypatch.setenv("GS_OUTREACH_FROM", "user@example.com")
+    monkeypatch.setenv("GS_OUTREACH_SIGNER_NAME", "Brent Scott")
     from guitar_searcher.config import get_settings
 
     get_settings.cache_clear()
     from guitar_searcher.outreach.compliance import MissingComplianceField
 
     with pytest.raises(MissingComplianceField):
+        compose_initial_inquiry(
+            shop=_shop(), query=QuerySpec(), use_llm_personalization=False
+        )
+
+
+def test_compose_refuses_without_signer_name(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("GS_OUTREACH_PHYSICAL_ADDRESS", "1 Main St, Indy, IN 46201")
+    monkeypatch.setenv("GS_OUTREACH_FROM", "user@example.com")
+    monkeypatch.setenv("GS_OUTREACH_SIGNER_NAME", "")
+    from guitar_searcher.config import get_settings
+
+    get_settings.cache_clear()
+
+    with pytest.raises(ValueError, match="GS_OUTREACH_SIGNER_NAME"):
         compose_initial_inquiry(
             shop=_shop(), query=QuerySpec(), use_llm_personalization=False
         )

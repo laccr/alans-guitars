@@ -9,6 +9,7 @@ from guitar_searcher.outreach.compliance import (
     footer_html,
     footer_text,
     looks_like_unsubscribe,
+    strip_quoted_reply,
 )
 
 
@@ -69,3 +70,50 @@ def test_unsubscribe_heuristic_negatives() -> None:
         "",
     ]:
         assert not looks_like_unsubscribe(body), body
+
+
+def test_unsubscribe_ignores_quoted_footer() -> None:
+    """A reply whose body says 'No' but quotes our own UNSUBSCRIBE footer should NOT
+    be flagged as unsubscribe. This was a real false-positive in production testing."""
+    reply = """I do not have that guitar, but please try Alan's Guitars.
+
+On Sat, May 23, 2026 at 1:23 PM Troy <troy@littlestudybuddy.com> wrote:
+
+> Hi Test Shop team,
+> ... boilerplate ...
+> reply with the word UNSUBSCRIBE anywhere in the body.
+> Mailing address: 6255 Aventura Drive, Sarasota, FL 34241
+"""
+    assert not looks_like_unsubscribe(reply)
+
+
+def test_strip_quoted_reply_removes_quoted_block() -> None:
+    reply = (
+        "I do not have that guitar, but please try Alan's Guitars.\n"
+        "\n"
+        "On Sat, May 23, 2026 at 1:23 PM Troy <troy@littlestudybuddy.com> wrote:\n"
+        ">\n"
+        "> Hi Test Shop team,\n"
+        "> reply with the word UNSUBSCRIBE\n"
+    )
+    new = strip_quoted_reply(reply)
+    assert "I do not have that guitar" in new
+    assert "Hi Test Shop team" not in new
+    assert "UNSUBSCRIBE" not in new
+
+
+def test_strip_quoted_reply_handles_outlook_original_message() -> None:
+    reply = (
+        "No, we don't have it.\n\n"
+        "-----Original Message-----\n"
+        "From: Troy\n"
+        "Subject: Inquiring about ...\n"
+        "reply with UNSUBSCRIBE\n"
+    )
+    new = strip_quoted_reply(reply)
+    assert "No, we don't have it." in new
+    assert "Original Message" not in new
+
+
+def test_strip_quoted_reply_empty_input() -> None:
+    assert strip_quoted_reply("") == ""

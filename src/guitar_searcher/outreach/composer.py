@@ -9,6 +9,7 @@ from typing import Any, cast
 
 from anthropic import Anthropic
 
+from guitar_searcher.config import get_settings
 from guitar_searcher.llm.client import CLAUDE_MODEL, get_anthropic_client
 from guitar_searcher.outreach.compliance import (
     CanSpamConfig,
@@ -32,7 +33,15 @@ class ComposedMessage:
     to_addr: str
 
 
-_USER_NAME = "Brent Scott"  # from memory: user-name
+def _signer_name() -> str:
+    """The name that appears in the email body signature. Required for compose."""
+    name = get_settings().outreach_signer_name.strip()
+    if not name:
+        raise ValueError(
+            "GS_OUTREACH_SIGNER_NAME is empty. Set it in .env to the name that should "
+            "appear in the body signature of outreach emails."
+        )
+    return name
 
 
 def _default_hook(shop: Shop, query: QuerySpec) -> str:
@@ -109,9 +118,10 @@ def _build_body(
     cfg: CanSpamConfig,
 ) -> tuple[str, str]:
     """Return (text_body, html_body) WITHOUT the footer (added by caller)."""
+    user_name = _signer_name()
     greeting = f"Hi {shop.name} team,"
     ask_lines = [
-        f"My name is {_USER_NAME} and I'm looking for the following guitar:",
+        f"My name is {user_name} and I'm looking for the following guitar:",
         "",
         f"    {query.display()}",
         "",
@@ -137,14 +147,14 @@ def _build_body(
             closing,
             "",
             "Thanks for your time,",
-            _USER_NAME,
+            user_name,
         ]
     )
 
     html_paragraphs = [
         f"<p>{escape(greeting)}</p>",
         f"<p>{escape(hook)}</p>",
-        f"<p>My name is {escape(_USER_NAME)} and I'm looking for the following guitar:</p>",
+        f"<p>My name is {escape(user_name)} and I'm looking for the following guitar:</p>",
         f"<blockquote style='border-left:3px solid #ccc;padding-left:8px'>{escape(query.display())}</blockquote>",
     ]
     if query.max_price_usd:
@@ -156,7 +166,7 @@ def _build_body(
     html_paragraphs.extend(
         [
             f"<p>{escape(closing)}</p>",
-            f"<p>Thanks for your time,<br>{escape(_USER_NAME)}</p>",
+            f"<p>Thanks for your time,<br>{escape(user_name)}</p>",
         ]
     )
     html_body = "<html><body style='font-family:-apple-system,Segoe UI,sans-serif;max-width:600px'>" + "".join(html_paragraphs) + "</body></html>"

@@ -34,6 +34,7 @@ def _shop(**overrides: object) -> Shop:
 def _setup_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GS_OUTREACH_PHYSICAL_ADDRESS", "PO Box 1, Indy, IN 46201")
     monkeypatch.setenv("GS_OUTREACH_FROM", "user@example.com")
+    monkeypatch.setenv("GS_OUTREACH_SIGNER_NAME", "Brent Scott")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "")
     monkeypatch.setenv("GS_OUTREACH_COOLDOWN_DAYS", "30")
     from guitar_searcher.config import get_settings

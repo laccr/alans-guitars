@@ -76,6 +76,45 @@ def _persist_candidates(candidates: list[Shop]) -> tuple[int, int]:
     return inserted, merged
 
 
+@shops_app.command("add")
+def add_shop(
+    name: str = typer.Option(..., "--name"),
+    domain: str = typer.Option(..., "--domain", help="bare domain, e.g. mygshop.com"),
+    email: str | None = typer.Option(None, "--email"),
+    website_url: str | None = typer.Option(None, "--website"),
+    city: str | None = typer.Option(None, "--city"),
+    state: str | None = typer.Option(None, "--state"),
+    timezone: str | None = typer.Option(None, "--tz", help="IANA tz, e.g. America/New_York"),
+    strategy: str = typer.Option("email_only", "--strategy"),
+    classification: str = typer.Option("unknown", "--classification"),
+    notes: str | None = typer.Option(None, "--notes"),
+    active: bool = typer.Option(True, "--active/--inactive"),
+) -> None:
+    """Insert one shop manually (e.g. for testing outreach or for shops you've found by hand)."""
+    init_db()
+    shop = Shop(
+        name=name,
+        domain=domain,
+        website_url=website_url or f"https://{domain}",
+        email=email,
+        city=city,
+        state=state,
+        timezone=timezone,
+        inventory_strategy=strategy,
+        classification=classification,
+        notes=notes,
+        active=active,
+        discovered_from="manual",
+    )
+    with get_session() as session:
+        existing = find_existing_shop(session, shop)
+        if existing is not None:
+            console.print(f"[yellow]Shop already exists (id={existing.id}, name={existing.name}).[/yellow]")
+            return
+        session.add(_to_row(shop))
+    console.print(f"[green]Added shop[/green] {name} ({domain})")
+
+
 @shops_app.command("list")
 def list_shops(
     only_active: bool = typer.Option(True, "--active/--all"),

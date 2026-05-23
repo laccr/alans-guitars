@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 from guitar_searcher.llm.client import CLAUDE_MODEL, get_anthropic_client
 from guitar_searcher.models.outreach import OutreachAttemptRow, OutreachReplyRow
-from guitar_searcher.outreach.compliance import looks_like_unsubscribe
+from guitar_searcher.outreach.compliance import looks_like_unsubscribe, strip_quoted_reply
 from guitar_searcher.outreach.queue import record_opt_out
 from guitar_searcher.utils.logging import get_logger
 
@@ -79,8 +79,9 @@ _TOOL: dict[str, Any] = {
 
 
 def classify_reply(body: str) -> dict[str, Any]:
-    """Classify one reply body. Falls back to heuristics if LLM unavailable."""
-    if looks_like_unsubscribe(body):
+    """Classify one reply body. Strips quoted prior conversation before any analysis."""
+    new_content = strip_quoted_reply(body) or body
+    if looks_like_unsubscribe(new_content):
         return {
             "classification": "unsubscribe",
             "rationale": "Body contains opt-out language (heuristic match).",
@@ -115,7 +116,7 @@ def classify_reply(body: str) -> dict[str, Any]:
             tool_choice=cast(Any, {"type": "tool", "name": "classify_reply"}),
             messages=cast(
                 Any,
-                [{"role": "user", "content": body[:6000]}],
+                [{"role": "user", "content": new_content[:6000]}],
             ),
         )
     except Exception as exc:
