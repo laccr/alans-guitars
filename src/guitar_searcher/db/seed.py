@@ -58,6 +58,8 @@ def _to_row(shop: Shop) -> ShopRow:
         scraper_module=shop.scraper_module,
         notes=shop.notes,
         active=shop.active,
+        discovered_from=shop.discovered_from or "hand_curated",
+        last_verified_at=shop.last_verified_at,
     )
 
 
@@ -77,6 +79,10 @@ def _update_row(row: ShopRow, shop: Shop) -> None:
     row.scraper_module = shop.scraper_module
     row.notes = shop.notes
     row.active = shop.active
+    if shop.discovered_from:
+        row.discovered_from = shop.discovered_from
+    if shop.last_verified_at:
+        row.last_verified_at = shop.last_verified_at
 
 
 def row_to_shop(row: ShopRow) -> Shop:
@@ -99,4 +105,6 @@ def row_to_shop(row: ShopRow) -> Shop:
         scraper_module=row.scraper_module,
         notes=row.notes,
         active=row.active,
+        discovered_from=row.discovered_from,
+        last_verified_at=row.last_verified_at,
     )

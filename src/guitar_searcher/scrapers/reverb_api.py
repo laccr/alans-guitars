@@ -150,9 +150,9 @@ class ReverbApiScraper(AbstractScraper):
             url = raw.get("_links", {}).get("web", {}).get("href")
             if not url:
                 return None
-            shop = raw.get("shop", {}) or {}
-            shop_name = shop.get("name") or "Reverb seller"
-            shop_url = shop.get("_links", {}).get("web", {}).get("href")
+            shop_obj = raw.get("shop") or {}
+            shop_name = shop_obj.get("name") or raw.get("shop_name") or "Reverb seller"
+            shop_url = shop_obj.get("_links", {}).get("web", {}).get("href")
             shop_domain = urlparse(shop_url).hostname if shop_url else "reverb.com"
 
             title = raw.get("title", "")

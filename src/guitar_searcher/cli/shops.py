@@ -1,13 +1,19 @@
 from __future__ import annotations
 
+import asyncio
+
 import typer
 from rich.console import Console
 from rich.table import Table
 from sqlalchemy import select
 
-from guitar_searcher.db.seed import load_seed_shops, upsert_shops
+from guitar_searcher.db.seed import _to_row, load_seed_shops, upsert_shops
 from guitar_searcher.db.session import get_session, init_db
+from guitar_searcher.discovery.dedupe import find_existing_shop, merge_into
+from guitar_searcher.discovery.osm import discover_osm_shops
+from guitar_searcher.discovery.reverb_directory import discover_reverb_shops
 from guitar_searcher.models.shop import ShopRow
+from guitar_searcher.schemas.shop import Shop
 
 console = Console()
 shops_app = typer.Typer(help="Manage the shop directory.", no_args_is_help=True)
@@ -21,6 +27,49 @@ def seed() -> None:
     with get_session() as session:
         inserted, updated = upsert_shops(session, shops)
     console.print(f"[green]Seed loaded.[/green] inserted={inserted} updated={updated}")
+
+
+@shops_app.command("discover")
+def discover(
+    source: str = typer.Option(..., "--source", help="reverb | osm"),
+    max_shops: int = typer.Option(500, "--max", help="Cap for reverb directory discovery"),
+) -> None:
+    """Discover new shops from a directory source and merge into the database."""
+    init_db()
+    if source == "reverb":
+        result = asyncio.run(discover_reverb_shops(max_unique_shops=max_shops))
+        candidates = result.us_shops
+        console.print(
+            f"[bold]Reverb directory:[/bold] examined {result.shops_examined} shops, "
+            f"{len(candidates)} US-based candidates"
+        )
+    elif source == "osm":
+        osm_result = asyncio.run(discover_osm_shops())
+        candidates = osm_result.candidates
+        console.print(
+            f"[bold]OSM Overpass:[/bold] {osm_result.raw_elements} elements, "
+            f"{len(candidates)} candidates"
+        )
+    else:
+        raise typer.BadParameter("--source must be 'reverb' or 'osm'")
+
+    inserted, merged = _persist_candidates(candidates)
+    console.print(f"[green]Done.[/green] inserted={inserted} merged_into_existing={merged}")
+
+
+def _persist_candidates(candidates: list[Shop]) -> tuple[int, int]:
+    inserted = 0
+    merged = 0
+    with get_session() as session:
+        for cand in candidates:
+            existing = find_existing_shop(session, cand)
+            if existing is None:
+                session.add(_to_row(cand))
+                inserted += 1
+            else:
+                merge_into(existing, cand)
+                merged += 1
+    return inserted, merged
 
 
 @shops_app.command("list")

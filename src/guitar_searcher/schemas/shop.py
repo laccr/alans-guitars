@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from enum import StrEnum
 
 from pydantic import BaseModel, Field, HttpUrl
@@ -52,3 +53,9 @@ class Shop(BaseModel):
 
     notes: str | None = None
     active: bool = True
+
+    discovered_from: str | None = Field(
+        default=None,
+        description="hand_curated | reverb_directory | namm | osm | google_places | yelp",
+    )
+    last_verified_at: datetime | None = None

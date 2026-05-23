@@ -18,12 +18,12 @@ shops:
     domain: sweetwater.com
     website_url: https://www.sweetwater.com
     classification: major_retailer
-    inventory_strategy: dedicated_scraper
-    scraper_module: sweetwater
+    inventory_strategy: reverb_api
+    reverb_shop_slug: sweetwater-sound
     city: Fort Wayne
     state: IN
     timezone: America/Indiana/Indianapolis
-    notes: Akamai/Cloudflare bot detection — uses Playwright + stealth.
+    notes: Direct site is Akamai-protected; we route through their Reverb storefront. Phase 2b will revive a Playwright+stealth direct scraper if Reverb coverage proves insufficient.
 
   - name: "Guitar Center"
     domain: guitarcenter.com
@@ -65,11 +65,12 @@ shops:
     domain: wildwoodguitars.com
     website_url: https://www.wildwoodguitars.com
     classification: boutique
-    inventory_strategy: dedicated_scraper
-    scraper_module: wildwood
+    inventory_strategy: reverb_api
+    reverb_shop_slug: wildwood-guitars
     city: Louisville
     state: CO
     timezone: America/Denver
+    notes: Direct site WAF-blocks scrapers; routed through Reverb storefront.
 
   - name: "Chicago Music Exchange"
     domain: chicagomusicexchange.com
@@ -85,21 +86,23 @@ shops:
     domain: cartervintage.com
     website_url: https://cartervintage.com
     classification: vintage_specialist
-    inventory_strategy: dedicated_scraper
-    scraper_module: carter_vintage
+    inventory_strategy: reverb_api
+    reverb_shop_slug: cartervintage
     city: Nashville
     state: TN
     timezone: America/Chicago
+    notes: Reverb storefront mirrors inventory.
 
   - name: "Elderly Instruments"
     domain: elderly.com
     website_url: https://www.elderly.com
     classification: vintage_specialist
-    inventory_strategy: dedicated_scraper
-    scraper_module: elderly
+    inventory_strategy: reverb_api
+    reverb_shop_slug: elderly-instruments
     city: Lansing
     state: MI
     timezone: America/Detroit
+    notes: Direct site WAF-blocks scrapers; Reverb storefront covers inventory.
 
   - name: "Gruhn Guitars"
     domain: gruhn.com
